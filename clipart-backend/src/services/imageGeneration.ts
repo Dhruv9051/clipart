@@ -8,8 +8,8 @@ type GenerateParams = {
 
 const HF_TOKEN = process.env.HUGGINGFACE_TOKEN ?? '';
 
-// Free model on Hugging Face — no credits needed
-const MODEL_URL = 'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1';
+// Updated HuggingFace router URL
+const MODEL_URL = 'https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-2-1';
 
 export const ImageGenerationService = {
   async generateImage(params: GenerateParams): Promise<string> {
@@ -43,12 +43,11 @@ export const ImageGenerationService = {
       throw new Error(`HuggingFace API error: ${err}`);
     }
 
-    // HF returns raw image bytes — convert to base64 data URL
+    // HF returns raw image bytes — convert to base64
     const buffer = await response.arrayBuffer();
     const base64 = Buffer.from(buffer).toString('base64');
-    const dataUrl = `data:image/png;base64,${base64}`;
 
-    // Upload to a temporary image host so mobile can download it
+    // Upload to imgur so mobile can access via URL
     const uploadResponse = await fetch('https://api.imgur.com/3/image', {
       method: 'POST',
       headers: {
@@ -59,8 +58,8 @@ export const ImageGenerationService = {
     });
 
     if (!uploadResponse.ok) {
-      // Fallback: return data URL directly (works on web, not mobile)
-      return dataUrl;
+      // Fallback: return data URL (works on web only)
+      return `data:image/png;base64,${base64}`;
     }
 
     const uploadData = await uploadResponse.json() as { data: { link: string } };
