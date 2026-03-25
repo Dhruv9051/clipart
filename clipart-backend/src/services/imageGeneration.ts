@@ -8,8 +8,8 @@ type GenerateParams = {
 
 const HF_TOKEN = process.env.HUGGINGFACE_TOKEN ?? '';
 
-// Using hf-inference provider with correct router URL
-const MODEL_URL = 'https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0/v1/images/generations';
+// Correct HF router endpoint for text-to-image
+const MODEL_URL = 'https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0';
 
 export const ImageGenerationService = {
   async generateImage(params: GenerateParams): Promise<string> {
@@ -24,10 +24,14 @@ export const ImageGenerationService = {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        prompt: fullPrompt,
-        n: 1,
-        size: '512x512',
-        response_format: 'b64_json',
+        inputs: fullPrompt,
+        parameters: {
+          negative_prompt: 'ugly, blurry, low quality, distorted, watermark',
+          width: 512,
+          height: 512,
+          num_inference_steps: 20,
+          guidance_scale: 7.5,
+        },
       }),
     });
 
@@ -36,11 +40,11 @@ export const ImageGenerationService = {
       throw new Error(`HuggingFace API error: ${err}`);
     }
 
-    const result = await response.json() as { data: Array<{ b64_json: string }> };
-    const base64 = result.data[0]?.b64_json;
-    if (!base64) throw new Error('No image data returned');
+    // HF returns raw image bytes
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
 
-    // Upload to imgur for a public URL (needed for mobile download)
+    // Upload to imgur for a public accessible URL
     const uploadResponse = await fetch('https://api.imgur.com/3/image', {
       method: 'POST',
       headers: {
@@ -51,11 +55,12 @@ export const ImageGenerationService = {
     });
 
     if (!uploadResponse.ok) {
+      console.log('[hf] Imgur upload failed, returning data URL');
       return `data:image/png;base64,${base64}`;
     }
 
     const uploadData = await uploadResponse.json() as { data: { link: string } };
-    console.log(`[hf] Image uploaded → ${uploadData.data.link}`);
+    console.log(`[hf] Done → ${uploadData.data.link}`);
     return uploadData.data.link;
   },
 };
