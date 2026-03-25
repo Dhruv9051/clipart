@@ -20,14 +20,16 @@ const HEADERS: Record<string, string> = {
 
 async function createPrediction(params: GenerateParams): Promise<Prediction> {
   const body = {
-    version: '727e49a643e999d602a896c774a0658ffefea21465756a6ce24b7ea4165fffea',
+    // stability-ai/stable-diffusion — verified free public model
+    version: 'ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4',
     input: {
-      prompt: `${params.prompt}, high quality, detailed`,
-      negative_prompt: 'ugly, blurry, low quality, distorted, watermark, text',
-      num_inference_steps: 4,
-      guidance_scale: 0,
-      width: 1024,
-      height: 1024,
+      prompt: `${params.prompt}, high quality, detailed, professional illustration`,
+      negative_prompt: 'ugly, blurry, low quality, distorted, watermark, text, nsfw',
+      width: 768,
+      height: 768,
+      num_inference_steps: 30,
+      guidance_scale: 7.5,
+      scheduler: 'DPMSolverMultistep',
     },
   };
 
@@ -42,7 +44,7 @@ async function createPrediction(params: GenerateParams): Promise<Prediction> {
     throw new Error(`Replicate API error: ${err}`);
   }
 
-  const data = await response.json() as Prediction;  // ← explicit cast
+  const data = await response.json() as Prediction;
   return data;
 }
 
@@ -69,7 +71,7 @@ async function pollUntilDone(predictionId: string): Promise<string> {
     }
 
     if (prediction.status === 'failed' || prediction.status === 'canceled') {
-      throw new Error(`Generation ${prediction.status}: ${prediction.error ?? 'unknown error'}`);
+      throw new Error(`Generation ${prediction.status}: ${prediction.error ?? 'unknown'}`);
     }
   }
 
@@ -78,7 +80,7 @@ async function pollUntilDone(predictionId: string): Promise<string> {
 
 export const ReplicateService = {
   async generateImage(params: GenerateParams): Promise<string> {
-    console.log(`[replicate] Creating prediction for style: ${params.styleId}`);
+    console.log(`[replicate] Creating prediction → style: ${params.styleId}`);
     const prediction = await createPrediction(params);
     console.log(`[replicate] Prediction created: ${prediction.id}`);
     return pollUntilDone(prediction.id);
