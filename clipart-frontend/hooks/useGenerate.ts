@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { STYLES_CONFIG } from '../constants/theme';
 import { ApiService } from '../services/api';
 
@@ -30,25 +30,34 @@ export function useGenerate() {
     updateResult(styleId, { status: 'loading' });
 
     try {
-      // Read image as base64
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      let base64: string;
 
-      // Call our backend proxy (never calls Replicate directly from app)
+      if (Platform.OS === 'web') {
+        // On web, imageUri is already a data URL like "data:image/jpeg;base64,..."
+        base64 = imageUri.split(',')[1];
+      } else {
+        // On mobile, read file as base64
+        base64 = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
+
       const data = await ApiService.generateClipart({
         imageBase64: base64,
         styleId,
         prompt,
       });
 
-      // Download the result image to local cache
-      const localUri = `${FileSystem.cacheDirectory}clipart_${styleId}_${Date.now()}.png`;
-      const download = await FileSystem.downloadAsync(data.imageUrl, localUri);
-
-      if (download.status !== 200) throw new Error('Image download failed');
-
-      updateResult(styleId, { status: 'done', uri: download.uri });
+      if (Platform.OS === 'web') {
+        // On web, just use the URL directly — no local file system
+        updateResult(styleId, { status: 'done', uri: data.imageUrl });
+      } else {
+        // On mobile, download to local cache
+        const localUri = `${FileSystem.cacheDirectory}clipart_${styleId}_${Date.now()}.png`;
+        const download = await FileSystem.downloadAsync(data.imageUrl, localUri);
+        if (download.status !== 200) throw new Error('Download failed');
+        updateResult(styleId, { status: 'done', uri: download.uri });
+      }
     } catch (err: any) {
       console.error(`[useGenerate] ${styleId} failed:`, err.message);
       updateResult(styleId, { status: 'error' });
@@ -56,7 +65,7 @@ export function useGenerate() {
   };
 
   const startGeneration = useCallback(
-    (imageUri: string, selectedStyles: typeof STYLES_CONFIG) => {
+    async (imageUri: string, selectedStyles: typeof STYLES_CONFIG) => {
       // Set all to loading immediately for instant UI feedback
       const initial: Results = {};
       selectedStyles.forEach(s => {
@@ -65,10 +74,15 @@ export function useGenerate() {
       setResults(initial);
       resultsRef.current = initial;
 
-      // Fire all style generations in parallel
-      selectedStyles.forEach(style => {
+      // Stagger requests by 12 seconds each to avoid rate limit
+      // Remove this once payment method is added to Replicate
+      for (let i = 0; i < selectedStyles.length; i++) {
+        const style = selectedStyles[i];
+        if (i > 0) {
+          await new Promise(r => setTimeout(r, 12000)); // 12s gap
+        }
         generateSingleStyle(imageUri, style.id, style.prompt);
-      });
+      }
     },
     [updateResult]
   );

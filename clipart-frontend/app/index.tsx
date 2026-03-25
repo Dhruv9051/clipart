@@ -79,7 +79,7 @@ export default function HomeScreen() {
       {/* Upload */}
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>1 · Your Photo</Text>
-        <ImageUploadBox imageUri={imageUri} onPress={pickImage} />
+        <ImageUploadBox imageUri={imageUri} onPress={pickImage} onWebFileSelect={(uri) => setImageUri(uri)} />
       </View>
 
       {/* Style picker */}
