@@ -1,0 +1,96 @@
+export const Colors = {
+  bg: '#0A0A0F',
+  surface: '#13131A',
+  surfaceHigh: '#1E1E2E',
+  border: '#2A2A3E',
+  primary: '#7C3AED',
+  primaryLight: '#A855F7',
+  primaryGlow: 'rgba(124, 58, 237, 0.3)',
+  accent: '#06B6D4',
+  accentGlow: 'rgba(6, 182, 212, 0.3)',
+  text: '#F1F5F9',
+  textMuted: '#64748B',
+  textSub: '#94A3B8',
+  success: '#10B981',
+  error: '#EF4444',
+  white: '#FFFFFF',
+};
+
+export const Fonts = {
+  sizes: {
+    xs: 11,
+    sm: 13,
+    md: 15,
+    lg: 18,
+    xl: 22,
+    xxl: 28,
+    xxxl: 36,
+  },
+  weights: {
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
+    extrabold: '800' as const,
+  },
+};
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+};
+
+export const Radius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  full: 999,
+};
+
+export const STYLES_CONFIG = [
+  {
+    id: 'cartoon',
+    label: 'Cartoon',
+    emoji: '🎨',
+    description: 'Bold outlines, vibrant colors',
+    gradient: ['#7C3AED', '#A855F7'],
+    prompt: 'cartoon style illustration, bold black outlines, bright vivid colors, clean vector art, Disney/Pixar inspired, professional clipart',
+  },
+  {
+    id: 'anime',
+    label: 'Anime',
+    emoji: '⛩️',
+    description: 'Japanese animation style',
+    gradient: ['#EC4899', '#F43F5E'],
+    prompt: 'anime style illustration, manga art style, large expressive eyes, clean linework, vibrant colors, Studio Ghibli inspired, professional',
+  },
+  {
+    id: 'pixel',
+    label: 'Pixel Art',
+    emoji: '👾',
+    description: '8-bit retro game style',
+    gradient: ['#06B6D4', '#0EA5E9'],
+    prompt: 'pixel art style, 8-bit retro video game art, chunky pixels, limited color palette, retro game character sprite, clean pixelated',
+  },
+  {
+    id: 'flat',
+    label: 'Flat',
+    emoji: '✏️',
+    description: 'Minimal flat illustration',
+    gradient: ['#10B981', '#059669'],
+    prompt: 'flat design illustration, minimal style, geometric shapes, no gradients, modern flat vector art, clean simple design, professional clipart',
+  },
+  {
+    id: 'sketch',
+    label: 'Sketch',
+    emoji: '🖊️',
+    description: 'Hand-drawn pencil sketch',
+    gradient: ['#F59E0B', '#EF4444'],
+    prompt: 'pencil sketch illustration, hand drawn style, cross hatching, graphite drawing, detailed sketch art, black and white, professional illustration',
+  },
+];
