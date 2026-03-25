@@ -1,5 +1,3 @@
-import { config } from '../config';
-
 const HF_TOKEN = process.env.HUGGINGFACE_TOKEN ?? '';
 
 type GenerateParams = {
@@ -8,83 +6,97 @@ type GenerateParams = {
   styleId: string;
 };
 
-// These are truly free models that work without credits
-const FREE_MODELS = [
-  'black-forest-labs/FLUX.1-schnell',
-  'stabilityai/stable-diffusion-2',
-  'runwayml/stable-diffusion-v1-5',
-];
-
-async function tryGenerate(modelUrl: string, prompt: string): Promise<ArrayBuffer | null> {
-  const response = await fetch(`https://router.huggingface.co/hf-inference/models/${modelUrl}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${HF_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      inputs: prompt,
-      parameters: {
-        negative_prompt: 'ugly, blurry, low quality, distorted, watermark',
-        width: 512,
-        height: 512,
-        num_inference_steps: 20,
-        guidance_scale: 7.5,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    console.log(`[hf] Model ${modelUrl} failed: ${err}`);
-    return null;
-  }
-
-  return response.arrayBuffer();
+// Pollinations AI — completely free, no API key needed
+async function generateWithPollinations(prompt: string, styleId: string): Promise<string> {
+  const fullPrompt = `${prompt}, high quality, detailed, professional illustration`;
+  const encoded = encodeURIComponent(fullPrompt);
+  const seed = Math.floor(Math.random() * 1000000);
+  // This URL directly serves the generated image
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&seed=${seed}&nologo=true&enhance=true&model=flux`;
+  
+  console.log(`[pollinations] Generated URL for ${styleId}: ${url}`);
+  return url;
 }
 
-async function uploadToImgur(base64: string): Promise<string> {
-  const response = await fetch('https://api.imgur.com/3/image', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Client-ID 546c25a59c58ad7',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ image: base64, type: 'base64' }),
-  });
+async function generateWithHuggingFace(prompt: string): Promise<string | null> {
+  const models = [
+    'black-forest-labs/FLUX.1-schnell',
+    'stabilityai/stable-diffusion-2',
+  ];
 
-  if (!response.ok) throw new Error('Imgur upload failed');
+  for (const model of models) {
+    try {
+      const response = await fetch(
+        `https://router.huggingface.co/hf-inference/models/${model}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${HF_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inputs: prompt,
+            parameters: {
+              negative_prompt: 'ugly, blurry, low quality, distorted, watermark',
+              width: 512,
+              height: 512,
+              num_inference_steps: 20,
+              guidance_scale: 7.5,
+            },
+          }),
+        }
+      );
 
-  const data = await response.json() as { data: { link: string } };
-  return data.data.link;
+      if (!response.ok) {
+        console.log(`[hf] ${model} failed: ${response.status}`);
+        continue;
+      }
+
+      const buffer = await response.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString('base64');
+
+      // Upload to imgur
+      const uploadRes = await fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Client-ID 546c25a59c58ad7',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: base64, type: 'base64' }),
+      });
+
+      if (uploadRes.ok) {
+        const data = await uploadRes.json() as { data: { link: string } };
+        return data.data.link;
+      }
+
+      return `data:image/png;base64,${base64}`;
+    } catch (err) {
+      console.log(`[hf] ${model} error:`, err);
+      continue;
+    }
+  }
+
+  return null;
 }
 
 export const ImageGenerationService = {
   async generateImage(params: GenerateParams): Promise<string> {
-    console.log(`[hf] Generating → style: ${params.styleId}`);
+    console.log(`[generate] Starting → style: ${params.styleId}`);
 
     const fullPrompt = `${params.prompt}, high quality, detailed, professional illustration`;
 
-    // Try each free model in order until one works
-    for (const model of FREE_MODELS) {
-      console.log(`[hf] Trying model: ${model}`);
-      const buffer = await tryGenerate(model, fullPrompt);
-
-      if (buffer) {
-        const base64 = Buffer.from(buffer).toString('base64');
-
-        try {
-          const url = await uploadToImgur(base64);
-          console.log(`[hf] Done → ${url}`);
-          return url;
-        } catch {
-          // Imgur failed, return data URL as fallback
-          console.log('[hf] Imgur failed, using data URL');
-          return `data:image/png;base64,${base64}`;
-        }
+    // Try HuggingFace first
+    if (HF_TOKEN) {
+      const hfResult = await generateWithHuggingFace(fullPrompt);
+      if (hfResult) {
+        console.log(`[generate] HF succeeded → style: ${params.styleId}`);
+        return hfResult;
       }
     }
 
-    throw new Error('All models failed. Please check HuggingFace token and credits.');
+    // Fallback to Pollinations AI (always free, always works)
+    console.log(`[generate] Falling back to Pollinations → style: ${params.styleId}`);
+    return generateWithPollinations(fullPrompt, params.styleId);
   },
 };
