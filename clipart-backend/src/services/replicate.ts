@@ -13,14 +13,13 @@ type Prediction = {
   error?: string;
 };
 
-const HEADERS = {
+const HEADERS: Record<string, string> = {
   'Authorization': `Token ${config.replicateToken}`,
   'Content-Type': 'application/json',
 };
 
 async function createPrediction(params: GenerateParams): Promise<Prediction> {
   const body = {
-    // lucataco/sdxl-lightning-4step — fast, free, great quality
     version: '727e49a643e999d602a896c774a0658ffefea21465756a6ce24b7ea4165fffea',
     input: {
       prompt: `${params.prompt}, high quality, detailed`,
@@ -43,7 +42,8 @@ async function createPrediction(params: GenerateParams): Promise<Prediction> {
     throw new Error(`Replicate API error: ${err}`);
   }
 
-  return response.json();
+  const data = await response.json() as Prediction;  // ← explicit cast
+  return data;
 }
 
 async function pollUntilDone(predictionId: string): Promise<string> {
@@ -59,7 +59,7 @@ async function pollUntilDone(predictionId: string): Promise<string> {
 
     if (!response.ok) throw new Error('Failed to poll prediction status');
 
-    const prediction: Prediction = await response.json();
+    const prediction = await response.json() as Prediction;
     console.log(`[replicate] ${predictionId} → ${prediction.status}`);
 
     if (prediction.status === 'succeeded') {
