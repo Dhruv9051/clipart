@@ -7,7 +7,6 @@ if (!process.env.REPLICATE_API_TOKEN && !process.env.HUGGINGFACE_TOKEN) {
 
 export const config = {
   port: parseInt(process.env.PORT ?? '3000', 10),
-  replicateToken: process.env.REPLICATE_API_TOKEN ?? '',
   huggingfaceToken: process.env.HUGGINGFACE_TOKEN ?? '',
   nodeEnv: process.env.NODE_ENV ?? 'development',
 };
