@@ -13,12 +13,28 @@ type Props = {
 };
 
 export default function ResultCard({ label, emoji, imageUri, status, onDownload, onShare }: Props) {
-  const handleWebDownload = () => {
+  const handleWebDownload = async () => {
     if (!imageUri) return;
-    const link = document.createElement('a');
-    link.href = imageUri;
-    link.download = `clipart-${label.toLowerCase()}.png`;
-    link.click();
+
+    try {
+      // Fetch the image as a blob then trigger download
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `clipart-${label.toLowerCase()}-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up blob URL
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch {
+      // Fallback: open in new tab so user can save manually
+      window.open(imageUri, '_blank');
+    }
   };
 
   const handleDownload = Platform.OS === 'web' ? handleWebDownload : onDownload;
