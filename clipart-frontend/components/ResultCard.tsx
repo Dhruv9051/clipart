@@ -13,31 +13,43 @@ type Props = {
 };
 
 export default function ResultCard({ label, emoji, imageUri, status, onDownload, onShare }: Props) {
+
   const handleWebDownload = async () => {
     if (!imageUri) return;
-
     try {
-      // Fetch the image as a blob then trigger download
       const response = await fetch(imageUri);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
-
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = `clipart-${label.toLowerCase()}-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // Clean up blob URL
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     } catch {
-      // Fallback: open in new tab so user can save manually
       window.open(imageUri, '_blank');
     }
   };
 
-  const handleDownload = Platform.OS === 'web' ? handleWebDownload : onDownload;
+  const handleWebShare = async () => {
+    if (!imageUri) return;
+    try {
+      // Try native Web Share API first (works on mobile browsers)
+      if (navigator.share) {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        const file = new File([blob], `clipart-${label.toLowerCase()}.png`, { type: 'image/png' });
+        await navigator.share({ files: [file], title: `${label} Clipart` });
+      } else {
+        // Fallback: copy URL to clipboard
+        await navigator.clipboard.writeText(imageUri);
+        alert('Image URL copied to clipboard!');
+      }
+    } catch {
+      window.open(imageUri, '_blank');
+    }
+  };
 
   return (
     <View style={styles.card}>
@@ -45,11 +57,7 @@ export default function ResultCard({ label, emoji, imageUri, status, onDownload,
         <Text style={styles.emoji}>{emoji}</Text>
         <Text style={styles.label}>{label}</Text>
         {status === 'loading' && (
-          <ActivityIndicator
-            size="small"
-            color={Colors.primary}
-            style={{ marginLeft: 'auto' }}
-          />
+          <ActivityIndicator size="small" color={Colors.primary} style={{ marginLeft: 'auto' }} />
         )}
         {status === 'done' && <Text style={styles.done}>✓ Done</Text>}
         {status === 'error' && <Text style={styles.error}>✗ Failed</Text>}
@@ -75,13 +83,13 @@ export default function ResultCard({ label, emoji, imageUri, status, onDownload,
       {status === 'done' && (
         <View style={styles.actions}>
           <Pressable
-            onPress={handleDownload}
+            onPress={Platform.OS === 'web' ? handleWebDownload : onDownload}
             style={styles.actionBtn}
           >
             <Text style={styles.actionText}>⬇ Save</Text>
           </Pressable>
           <Pressable
-            onPress={Platform.OS === 'web' ? () => window.open(imageUri, '_blank') : onShare}
+            onPress={Platform.OS === 'web' ? handleWebShare : onShare}
             style={[styles.actionBtn, styles.shareBtn]}
           >
             <Text style={styles.actionText}>↗ Share</Text>
@@ -104,17 +112,8 @@ const styles = StyleSheet.create({
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   emoji: { fontSize: 20 },
-  label: {
-    fontSize: Fonts.sizes.md,
-    fontWeight: Fonts.weights.semibold,
-    color: Colors.text,
-  },
-  done: {
-    marginLeft: 'auto',
-    color: Colors.success,
-    fontSize: Fonts.sizes.sm,
-    fontWeight: Fonts.weights.medium,
-  },
+  label: { fontSize: Fonts.sizes.md, fontWeight: Fonts.weights.semibold, color: Colors.text },
+  done: { marginLeft: 'auto', color: Colors.success, fontSize: Fonts.sizes.sm, fontWeight: Fonts.weights.medium },
   error: { marginLeft: 'auto', color: Colors.error, fontSize: Fonts.sizes.sm },
   imageBox: { borderRadius: Radius.md, overflow: 'hidden', minHeight: 200 },
   image: { width: '100%', height: 250, borderRadius: Radius.md },
@@ -136,13 +135,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  shareBtn: {
-    backgroundColor: Colors.primaryGlow,
-    borderColor: Colors.primary,
-  },
-  actionText: {
-    color: Colors.text,
-    fontSize: Fonts.sizes.sm,
-    fontWeight: Fonts.weights.medium,
-  },
+  shareBtn: { backgroundColor: Colors.primaryGlow, borderColor: Colors.primary },
+  actionText: { color: Colors.text, fontSize: Fonts.sizes.sm, fontWeight: Fonts.weights.medium },
 });

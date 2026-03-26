@@ -1,25 +1,100 @@
 import React, { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import {
+  ScrollView, StyleSheet, Text, View,
+  Pressable, Alert, BackHandler, Platform,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import ResultCard from '../components/ResultCard';
 import { Colors, Fonts, Spacing, STYLES_CONFIG } from '../constants/theme';
 import { useGenerate } from '../hooks/useGenerate';
+import { GenerationStore } from '../store/generationStore';
 
 export default function GenerateScreen() {
   const insets = useSafeAreaInsets();
-  const { imageUri, styles: stylesParam } = useLocalSearchParams<{ imageUri: string; styles: string }>();
+  const router = useRouter();
+  const { imageUri, styles: stylesParam } = useLocalSearchParams<{
+    imageUri: string;
+    styles: string;
+  }>();
+
   const selectedIds = stylesParam?.split(',') ?? [];
   const selectedStyles = STYLES_CONFIG.filter(s => selectedIds.includes(s.id));
-  const { results, startGeneration, downloadImage, shareImage } = useGenerate();
+  const { results, isGenerating, startGeneration, downloadImage, shareImage } = useGenerate();
+  const doneCount = Object.values(results).filter(r => r.status === 'done').length;
 
+  // Redirect to home if no imageUri — handles browser refresh
+  useEffect(() => {
+    if (!imageUri || selectedStyles.length === 0) {
+      GenerationStore.reset();
+      router.replace('/');
+    }
+  }, []);
+
+  // Start generation
   useEffect(() => {
     if (imageUri && selectedStyles.length > 0) {
       startGeneration(imageUri, selectedStyles);
     }
   }, []);
 
-  const doneCount = Object.values(results).filter(r => r.status === 'done').length;
+  // Android hardware back button
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'web') return;
+
+      const onBackPress = () => {
+        if (isGenerating) {
+          Alert.alert(
+            'Generation in progress',
+            'Images are still being generated. Go back anyway?',
+            [
+              { text: 'Stay', style: 'cancel' },
+              {
+                text: 'Go back',
+                style: 'destructive',
+                onPress: () => {
+                  GenerationStore.reset();
+                  router.replace('/');
+                },
+              },
+            ]
+          );
+          return true;
+        }
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => {
+        subscription.remove();
+      };
+    }, [isGenerating])
+  );
+
+  const handleNewGeneration = () => {
+    if (isGenerating) {
+      Alert.alert(
+        'Still generating',
+        'Go back anyway? You will lose in-progress results.',
+        [
+          { text: 'Stay', style: 'cancel' },
+          {
+            text: 'Go back',
+            style: 'destructive',
+            onPress: () => {
+              GenerationStore.reset();
+              router.replace('/');
+            },
+          },
+        ]
+      );
+    } else {
+      GenerationStore.reset();
+      router.replace('/');
+    }
+  };
 
   return (
     <ScrollView
@@ -29,10 +104,21 @@ export default function GenerateScreen() {
     >
       <View style={styles.progressBar}>
         <Text style={styles.progressText}>
-          {doneCount}/{selectedStyles.length} complete
+          {isGenerating
+            ? `Generating... ${doneCount}/${selectedStyles.length} complete`
+            : `✓ All ${doneCount} cliparts ready!`}
         </Text>
         <View style={styles.track}>
-          <View style={[styles.fill, { width: `${(doneCount / selectedStyles.length) * 100}%` as any }]} />
+          <View
+            style={[
+              styles.fill,
+              {
+                width: `${selectedStyles.length > 0
+                  ? (doneCount / selectedStyles.length) * 100
+                  : 0}%` as any,
+              },
+            ]}
+          />
         </View>
       </View>
 
@@ -47,6 +133,12 @@ export default function GenerateScreen() {
           onShare={() => shareImage(style.id)}
         />
       ))}
+
+      {!isGenerating && doneCount > 0 && (
+        <Pressable onPress={handleNewGeneration} style={styles.newBtn}>
+          <Text style={styles.newBtnText}>← Generate New Clipart</Text>
+        </Pressable>
+      )}
     </ScrollView>
   );
 }
@@ -55,7 +147,26 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
   content: { padding: Spacing.lg, gap: Spacing.md },
   progressBar: { gap: Spacing.xs, marginBottom: Spacing.sm },
-  progressText: { fontSize: Fonts.sizes.sm, color: Colors.textMuted, textAlign: 'right' },
+  progressText: {
+    fontSize: Fonts.sizes.sm,
+    color: Colors.textMuted,
+    textAlign: 'right',
+    fontWeight: Fonts.weights.medium,
+  },
   track: { height: 4, backgroundColor: Colors.surfaceHigh, borderRadius: 99 },
   fill: { height: 4, backgroundColor: Colors.primary, borderRadius: 99 },
+  newBtn: {
+    marginTop: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: 12,
+    backgroundColor: Colors.surfaceHigh,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  newBtnText: {
+    color: Colors.text,
+    fontSize: Fonts.sizes.md,
+    fontWeight: Fonts.weights.medium,
+  },
 });

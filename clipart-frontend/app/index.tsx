@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
@@ -9,11 +9,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ImageUploadBox from '../components/ImageUploadBox';
 import StyleCard from '../components/StyleCard';
 import { Colors, Fonts, Radius, Spacing, STYLES_CONFIG } from '../constants/theme';
+import { GenerationStore } from '../store/generationStore';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(['cartoon', 'anime', 'pixel', 'flat', 'sketch']);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(
+    ['cartoon', 'anime', 'pixel', 'flat', 'sketch']
+  );
+
+  // Reset store and image when home screen mounts
+  useEffect(() => {
+    GenerationStore.reset();
+    setImageUri(null);
+  }, []);
 
   const pickImage = () => {
     Alert.alert('Upload Photo', 'Choose source', [
@@ -49,7 +58,9 @@ export default function HomeScreen() {
 
   const toggleStyle = (id: string) => {
     setSelectedStyles(prev =>
-      prev.includes(id) ? (prev.length > 1 ? prev.filter(s => s !== id) : prev) : [...prev, id]
+      prev.includes(id)
+        ? prev.length > 1 ? prev.filter(s => s !== id) : prev
+        : [...prev, id]
     );
   };
 
@@ -64,27 +75,36 @@ export default function HomeScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.md, paddingBottom: insets.bottom + 80 }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top + Spacing.md, paddingBottom: insets.bottom + 80 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
       <View style={styles.header}>
         <LinearGradient colors={[Colors.primary, Colors.accent]} style={styles.badge}>
           <Text style={styles.badgeText}>✦ AI Powered</Text>
         </LinearGradient>
         <Text style={styles.title}>Clipart{'\n'}Generator</Text>
-        <Text style={styles.subtitle}>Transform your photo into stunning clipart styles instantly</Text>
+        <Text style={styles.subtitle}>
+          Transform your photo into stunning clipart styles instantly
+        </Text>
       </View>
 
-      {/* Upload */}
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>1 · Your Photo</Text>
-        <ImageUploadBox imageUri={imageUri} onPress={pickImage} onWebFileSelect={(uri) => setImageUri(uri)} />
+        <ImageUploadBox
+          imageUri={imageUri}
+          onPress={pickImage}
+          onWebFileSelect={(uri) => setImageUri(uri)}
+        />
       </View>
 
-      {/* Style picker */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>2 · Choose Styles <Text style={styles.sectionSub}>({selectedStyles.length} selected)</Text></Text>
+        <Text style={styles.sectionLabel}>
+          2 · Choose Styles{' '}
+          <Text style={styles.sectionSub}>({selectedStyles.length} selected)</Text>
+        </Text>
         {rows.map((row, ri) => (
           <View key={ri} style={styles.row}>
             {row.map(s => (
@@ -99,15 +119,20 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {/* Generate button */}
-      <Pressable onPress={handleGenerate} style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}>
+      <Pressable
+        onPress={handleGenerate}
+        style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
+      >
         <LinearGradient
           colors={[Colors.primary, Colors.primaryLight]}
           style={styles.generateBtn}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
         >
           <Text style={styles.generateText}>✦ Generate Cliparts</Text>
-          <Text style={styles.generateSub}>{selectedStyles.length} style{selectedStyles.length > 1 ? 's' : ''} · parallel generation</Text>
+          <Text style={styles.generateSub}>
+            {selectedStyles.length} style{selectedStyles.length > 1 ? 's' : ''} · parallel generation
+          </Text>
         </LinearGradient>
       </Pressable>
     </ScrollView>
@@ -118,18 +143,45 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
   content: { paddingHorizontal: Spacing.lg, gap: Spacing.xl },
   header: { gap: Spacing.sm },
-  badge: { alignSelf: 'flex-start', paddingHorizontal: Spacing.md, paddingVertical: 6, borderRadius: Radius.full },
-  badgeText: { color: Colors.white, fontSize: Fonts.sizes.xs, fontWeight: Fonts.weights.bold, letterSpacing: 1 },
-  title: { fontSize: Fonts.sizes.xxxl, fontWeight: Fonts.weights.extrabold, color: Colors.text, lineHeight: 42 },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+  },
+  badgeText: {
+    color: Colors.white,
+    fontSize: Fonts.sizes.xs,
+    fontWeight: Fonts.weights.bold,
+    letterSpacing: 1,
+  },
+  title: {
+    fontSize: Fonts.sizes.xxxl,
+    fontWeight: Fonts.weights.extrabold,
+    color: Colors.text,
+    lineHeight: 42,
+  },
   subtitle: { fontSize: Fonts.sizes.md, color: Colors.textMuted, lineHeight: 22 },
   section: { gap: Spacing.sm },
-  sectionLabel: { fontSize: Fonts.sizes.sm, fontWeight: Fonts.weights.bold, color: Colors.textSub, textTransform: 'uppercase', letterSpacing: 1.2 },
+  sectionLabel: {
+    fontSize: Fonts.sizes.sm,
+    fontWeight: Fonts.weights.bold,
+    color: Colors.textSub,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+  },
   sectionSub: { color: Colors.primary, textTransform: 'none' },
   row: { flexDirection: 'row' },
   generateBtn: {
-    padding: Spacing.lg, borderRadius: Radius.xl,
-    alignItems: 'center', gap: 4,
+    padding: Spacing.lg,
+    borderRadius: Radius.xl,
+    alignItems: 'center',
+    gap: 4,
   },
-  generateText: { fontSize: Fonts.sizes.lg, fontWeight: Fonts.weights.bold, color: Colors.white },
+  generateText: {
+    fontSize: Fonts.sizes.lg,
+    fontWeight: Fonts.weights.bold,
+    color: Colors.white,
+  },
   generateSub: { fontSize: Fonts.sizes.sm, color: 'rgba(255,255,255,0.7)' },
 });
