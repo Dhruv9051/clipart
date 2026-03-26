@@ -61,15 +61,17 @@ export const STYLES_CONFIG = [
     emoji: '🎨',
     description: 'Bold outlines, vibrant colors',
     gradient: ['#7C3AED', '#A855F7'],
-    prompt: 'cartoon style illustration, bold black outlines, bright vivid colors, clean vector art, Disney/Pixar inspired, professional clipart',
+    prompt: 'Exact subject and composition as input image, transformed into a cartoon style illustration, bold black outlines, bright vivid colors, clean vector art, Disney/Pixar inspired, professional clipart',
+    negativePrompt: 'altered subject, completely different image, realistic, photographic, deformed, ugly',
   },
   {
     id: 'anime',
     label: 'Anime',
     emoji: '⛩️',
-    description: 'Japanese animation style',
+    description: 'Japanese art style',
     gradient: ['#EC4899', '#F43F5E'],
-    prompt: 'anime style illustration, manga art style, large expressive eyes, clean linework, vibrant colors, Studio Ghibli inspired, professional',
+    prompt: 'Exact subject and composition as input image, anime style illustration, manga art style, clean linework, vibrant colors, Studio Ghibli inspired, professional',
+    negativePrompt: 'altered subject, completely different image, photorealistic, 3d render, deformed',
   },
   {
     id: 'pixel',
@@ -77,7 +79,8 @@ export const STYLES_CONFIG = [
     emoji: '👾',
     description: '8-bit retro game style',
     gradient: ['#06B6D4', '#0EA5E9'],
-    prompt: 'pixel art style, 8-bit retro video game art, chunky pixels, limited color palette, retro game character sprite, clean pixelated',
+    prompt: 'Exact subject and composition as input image, 8-bit retro video game pixel art style, chunky pixels, limited color palette, clean pixelated',
+    negativePrompt: 'altered subject, completely different image, high resolution, realistic, painting, smooth lines',
   },
   {
     id: 'flat',
@@ -85,7 +88,8 @@ export const STYLES_CONFIG = [
     emoji: '✏️',
     description: 'Minimal flat illustration',
     gradient: ['#10B981', '#059669'],
-    prompt: 'flat design illustration, minimal style, geometric shapes, no gradients, modern flat vector art, clean simple design, professional clipart',
+    prompt: 'Exact subject and composition as input image, flat design illustration, minimal style, geometric shapes, no gradients, modern flat vector art, clean simple design, professional clipart',
+    negativePrompt: 'altered subject, completely different image, 3d, realistic, heavy shading, gradients, photographic',
   },
   {
     id: 'sketch',
@@ -93,7 +97,8 @@ export const STYLES_CONFIG = [
     emoji: '🖊️',
     description: 'Hand-drawn pencil sketch',
     gradient: ['#F59E0B', '#EF4444'],
-    prompt: 'pencil sketch illustration, hand drawn style, cross hatching, graphite drawing, detailed sketch art, black and white, professional illustration',
+    prompt: 'Exact subject and composition as input image, pencil sketch illustration, hand drawn style, cross hatching, graphite drawing, detailed sketch art, black and white, professional illustration',
+    negativePrompt: 'altered subject, completely different image, color, realistic, photograph, digital painting',
   },
 ];
 

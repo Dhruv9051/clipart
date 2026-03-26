@@ -2,6 +2,7 @@ type GenerateRequest = {
   imageBase64: string;
   styleId: string;
   prompt: string;
+  negativePrompt?: string;
 };
 
 type GenerateResponse = {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View,
+  Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -89,12 +89,9 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        <LinearGradient colors={[Colors.primary, Colors.accent]} style={styles.badge}>
-          <Text style={styles.badgeText}>✦ AI Powered</Text>
-        </LinearGradient>
         <Text style={styles.title}>Clipart{'\n'}Generator</Text>
         <Text style={styles.subtitle}>
-          Transform your photo into stunning clipart styles instantly
+          Transform your images into clipart styles instantly
         </Text>
       </View>
 
@@ -131,20 +128,19 @@ export default function HomeScreen() {
           </View>
         ))}
       </View>
-
       <Pressable
         onPress={handleGenerate}
         style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
       >
         <LinearGradient
-          colors={[Colors.primary, Colors.primaryLight]}
+          colors={[Colors.accentGlow, Colors.accent]}
           style={styles.generateBtn}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
         >
           <Text style={styles.generateText}>✦ Generate Cliparts</Text>
           <Text style={styles.generateSub}>
-            {selectedStyles.length} style{selectedStyles.length > 1 ? 's' : ''} · parallel generation
+            {selectedStyles.length} style{selectedStyles.length > 1 ? 's' : ''}
           </Text>
         </LinearGradient>
       </Pressable>
@@ -191,6 +187,15 @@ const styles = StyleSheet.create({
   },
   sectionSub: { color: Colors.primary, textTransform: 'none' },
   row: { flexDirection: 'row' },
+  input: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    fontSize: Fonts.sizes.md,
+    color: Colors.text,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
   generateBtn: {
     padding: Spacing.lg,
     borderRadius: Radius.xl,

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Clipart AI",
-    "slug": "clipart-ai",
+    "name": "Clipart",
+    "slug": "clipart",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundColor": "#0A0A0F"
       },
-      "package": "com.clipartai.app",
+      "package": "com.clipart.app",
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -33,23 +33,26 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Clipart AI to access your photos.",
-          "cameraPermission": "Allow Clipart AI to use your camera."
+          "photosPermission": "Allow Clipart to access your photos.",
+          "cameraPermission": "Allow Clipart to use your camera."
         }
       ],
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow Clipart AI to access your photos.",
-          "savePhotosPermission": "Allow Clipart AI to save generated images.",
+          "photosPermission": "Allow Clipart to access your photos.",
+          "savePhotosPermission": "Allow Clipart to save generated images.",
           "isAccessMediaLocationEnabled": true
         }
       ],
       "expo-sharing"
     ],
-    "scheme": "clipartai",
+    "scheme": "clipart",
     "experiments": {
       "typedRoutes": true
+    },
+    "web": {
+      "favicon": "./assets/android-icon-foreground.png"
     },
     "owner": "dhruvsuvarna",
     "extra": {

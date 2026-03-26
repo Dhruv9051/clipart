@@ -7,7 +7,7 @@ export function validateGenerateRequest(
   res: Response,
   next: NextFunction
 ) {
-  const { imageBase64, styleId, prompt } = req.body;
+  const { imageBase64, styleId, prompt, negativePrompt } = req.body;
 
   if (!imageBase64 || typeof imageBase64 !== 'string') {
     return res.status(400).json({ error: 'imageBase64 is required' });
@@ -17,6 +17,9 @@ export function validateGenerateRequest(
   }
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'prompt is required' });
+  }
+  if (negativePrompt && typeof negativePrompt !== 'string') {
+    return res.status(400).json({ error: 'negativePrompt must be a string' });
   }
   if (imageBase64.length > 7_000_000) {
     return res.status(413).json({ error: 'Image too large. Max 5MB.' });

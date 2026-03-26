@@ -5,7 +5,7 @@ import { ImageGenerationService } from '../services/imageGeneration';
 const router = Router();
 
 router.post('/', validateGenerateRequest, async (req: Request, res: Response) => {
-  const { imageBase64, styleId, prompt } = req.body;
+  const { imageBase64, styleId, prompt, negativePrompt } = req.body;
 
   try {
     console.log(`[generate] Starting → style: ${styleId}`);
@@ -13,6 +13,7 @@ router.post('/', validateGenerateRequest, async (req: Request, res: Response) =>
       imageBase64,
       styleId,
       prompt,
+      negativePrompt,
     });
     console.log(`[generate] Done → style: ${styleId}`);
     res.json({ imageUrl });

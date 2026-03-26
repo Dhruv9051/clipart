@@ -4,21 +4,25 @@ type GenerateParams = {
   imageBase64: string;
   prompt: string;
   styleId: string;
+  negativePrompt?: string;
 };
 
 // Pollinations AI — completely free, no API key needed
-async function generateWithPollinations(prompt: string, styleId: string): Promise<string> {
+async function generateWithPollinations(prompt: string, styleId: string, negativePrompt?: string): Promise<string> {
   const fullPrompt = `${prompt}, high quality, detailed, professional illustration`;
   const encoded = encodeURIComponent(fullPrompt);
   const seed = Math.floor(Math.random() * 1000000);
   // This URL directly serves the generated image
-  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&seed=${seed}&nologo=true&enhance=true&model=flux`;
+  let url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&seed=${seed}&nologo=true&enhance=true&model=flux`;
+  if (negativePrompt) {
+    url += `&neg_prompt=${encodeURIComponent(negativePrompt)}`;
+  }
   
   console.log(`[pollinations] Generated URL for ${styleId}: ${url}`);
   return url;
 }
 
-async function generateWithHuggingFace(prompt: string): Promise<string | null> {
+async function generateWithHuggingFace(prompt: string, negativePrompt?: string): Promise<string | null> {
   const models = [
     'black-forest-labs/FLUX.1-schnell',
     'stabilityai/stable-diffusion-2',
@@ -37,7 +41,7 @@ async function generateWithHuggingFace(prompt: string): Promise<string | null> {
           body: JSON.stringify({
             inputs: prompt,
             parameters: {
-              negative_prompt: 'ugly, blurry, low quality, distorted, watermark',
+              negative_prompt: negativePrompt ?? 'ugly, blurry, low quality, distorted, watermark',
               width: 512,
               height: 512,
               num_inference_steps: 20,
@@ -88,7 +92,7 @@ export const ImageGenerationService = {
 
     // Try HuggingFace first
     if (HF_TOKEN) {
-      const hfResult = await generateWithHuggingFace(fullPrompt);
+      const hfResult = await generateWithHuggingFace(fullPrompt, params.negativePrompt);
       if (hfResult) {
         console.log(`[generate] HF succeeded → style: ${params.styleId}`);
         return hfResult;
@@ -97,6 +101,6 @@ export const ImageGenerationService = {
 
     // Fallback to Pollinations AI (always free, always works)
     console.log(`[generate] Falling back to Pollinations → style: ${params.styleId}`);
-    return generateWithPollinations(fullPrompt, params.styleId);
+    return generateWithPollinations(fullPrompt, params.styleId, params.negativePrompt);
   },
 };
