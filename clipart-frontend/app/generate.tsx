@@ -14,32 +14,22 @@ import { GenerationStore } from '../store/generationStore';
 export default function GenerateScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { imageUri, styles: stylesParam } = useLocalSearchParams<{
-    imageUri: string;
-    styles: string;
-  }>();
+  const { styles: stylesParam } = useLocalSearchParams<{ styles: string }>();
 
   const selectedIds = stylesParam?.split(',') ?? [];
   const selectedStyles = STYLES_CONFIG.filter(s => selectedIds.includes(s.id));
   const { results, isGenerating, startGeneration, downloadImage, shareImage } = useGenerate();
   const doneCount = Object.values(results).filter(r => r.status === 'done').length;
-
-  // Redirect to home if no imageUri — handles browser refresh
+  const imageUri = GenerationStore.getState().imageUri;
+  
   useEffect(() => {
     if (!imageUri || selectedStyles.length === 0) {
-      GenerationStore.reset();
       router.replace('/');
+      return;
     }
+    startGeneration(imageUri, selectedStyles);
   }, []);
 
-  // Start generation
-  useEffect(() => {
-    if (imageUri && selectedStyles.length > 0) {
-      startGeneration(imageUri, selectedStyles);
-    }
-  }, []);
-
-  // Android hardware back button
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'web') return;
@@ -48,7 +38,7 @@ export default function GenerateScreen() {
         if (isGenerating) {
           Alert.alert(
             'Generation in progress',
-            'Images are still being generated. Go back anyway?',
+            'Go back anyway?',
             [
               { text: 'Stay', style: 'cancel' },
               {
@@ -74,26 +64,8 @@ export default function GenerateScreen() {
   );
 
   const handleNewGeneration = () => {
-    if (isGenerating) {
-      Alert.alert(
-        'Still generating',
-        'Go back anyway? You will lose in-progress results.',
-        [
-          { text: 'Stay', style: 'cancel' },
-          {
-            text: 'Go back',
-            style: 'destructive',
-            onPress: () => {
-              GenerationStore.reset();
-              router.replace('/');
-            },
-          },
-        ]
-      );
-    } else {
-      GenerationStore.reset();
-      router.replace('/');
-    }
+    GenerationStore.reset();
+    router.replace('/');
   };
 
   return (

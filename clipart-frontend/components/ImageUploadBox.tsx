@@ -13,19 +13,14 @@ export default function ImageUploadBox({ imageUri, onPress, onWebFileSelect }: P
   const handleWebUpload = (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file.');
       return;
     }
-
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image too large. Please select an image under 5MB.');
+      alert('Image too large. Max 5MB.');
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const uri = event.target?.result as string;
@@ -41,23 +36,13 @@ export default function ImageUploadBox({ imageUri, onPress, onWebFileSelect }: P
           <View style={styles.previewWrapper}>
             <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
             <label style={webStyles.changeLabel}>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleWebUpload}
-                style={webStyles.hiddenInput}
-              />
-              <Text style={styles.changeText}>Tap to change</Text>
+              <input type="file" accept="image/*" onChange={handleWebUpload} style={webStyles.hiddenInput} />
+              <Text style={styles.changeText}>Click to change</Text>
             </label>
           </View>
         ) : (
           <label style={webStyles.uploadLabel}>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleWebUpload}
-              style={webStyles.hiddenInput}
-            />
+            <input type="file" accept="image/*" onChange={handleWebUpload} style={webStyles.hiddenInput} />
             <LinearGradient
               colors={['rgba(124,58,237,0.15)', 'rgba(6,182,212,0.1)']}
               style={styles.uploadBox}
@@ -74,7 +59,6 @@ export default function ImageUploadBox({ imageUri, onPress, onWebFileSelect }: P
     );
   }
 
-  // Mobile version
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}>
       {imageUri ? (
@@ -101,24 +85,17 @@ export default function ImageUploadBox({ imageUri, onPress, onWebFileSelect }: P
 }
 
 const webStyles = {
-  uploadLabel: {
-    cursor: 'pointer',
-    display: 'block',
-  } as React.CSSProperties,
+  uploadLabel: { cursor: 'pointer', display: 'block' } as React.CSSProperties,
   changeLabel: {
     cursor: 'pointer',
     display: 'block',
     position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: 0, left: 0, right: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 8,
     textAlign: 'center' as const,
   } as React.CSSProperties,
-  hiddenInput: {
-    display: 'none',
-  } as React.CSSProperties,
+  hiddenInput: { display: 'none' } as React.CSSProperties,
 };
 
 const styles = StyleSheet.create({
@@ -133,19 +110,14 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   iconRing: {
-    width: 64,
-    height: 64,
+    width: 64, height: 64,
     borderRadius: Radius.full,
     backgroundColor: Colors.primaryGlow,
     alignItems: 'center',
     justifyContent: 'center',
   },
   icon: { fontSize: 28 },
-  uploadTitle: {
-    fontSize: Fonts.sizes.lg,
-    fontWeight: Fonts.weights.semibold,
-    color: Colors.text,
-  },
+  uploadTitle: { fontSize: Fonts.sizes.lg, fontWeight: Fonts.weights.semibold, color: Colors.text },
   uploadSub: { fontSize: Fonts.sizes.sm, color: Colors.textMuted },
   previewWrapper: { height: 200, borderRadius: Radius.xl, overflow: 'hidden' },
   preview: { width: '100%', height: '100%' },
@@ -153,9 +125,5 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: 'rgba(0,0,0,0.5)', padding: Spacing.sm, alignItems: 'center',
   },
-  changeText: {
-    color: Colors.white,
-    fontSize: Fonts.sizes.sm,
-    fontWeight: Fonts.weights.medium,
-  },
+  changeText: { color: Colors.white, fontSize: Fonts.sizes.sm, fontWeight: Fonts.weights.medium },
 });

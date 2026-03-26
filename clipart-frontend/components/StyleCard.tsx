@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Fonts, Radius, Spacing } from '../constants/theme';
 
@@ -15,7 +15,10 @@ type Props = {
 
 export default function StyleCard({ label, emoji, description, gradient, selected, onPress }: Props) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.wrapper, pressed && { opacity: 0.85 }]}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.wrapper, pressed && { opacity: 0.85 }]}
+    >
       <LinearGradient
         colors={selected ? (gradient as [string, string]) : [Colors.surfaceHigh, Colors.surfaceHigh]}
         style={[styles.card, selected && styles.selected]}
@@ -24,14 +27,14 @@ export default function StyleCard({ label, emoji, description, gradient, selecte
       >
         <Text style={styles.emoji}>{emoji}</Text>
         <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
-        <Text style={styles.desc}>{description}</Text>
+        <Text style={[styles.desc, selected && styles.descSelected]}>{description}</Text>
       </LinearGradient>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, margin: Spacing.xs },
+  wrapper: { flex: 1, margin: Spacing.xs, maxWidth: '34%' },
   card: {
     padding: Spacing.md,
     borderRadius: Radius.lg,
@@ -45,4 +48,5 @@ const styles = StyleSheet.create({
   label: { fontSize: Fonts.sizes.md, fontWeight: Fonts.weights.semibold, color: Colors.textMuted },
   labelSelected: { color: Colors.white },
   desc: { fontSize: Fonts.sizes.xs, color: Colors.textMuted, textAlign: 'center' },
+  descSelected: { color: Colors.white },
 });

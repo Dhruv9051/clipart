@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  Alert, Pressable, ScrollView, StyleSheet, Text, View,
+  Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -18,12 +18,6 @@ export default function HomeScreen() {
     ['cartoon', 'anime', 'pixel', 'flat', 'sketch']
   );
 
-  // Reset store and image when home screen mounts
-  useEffect(() => {
-    GenerationStore.reset();
-    setImageUri(null);
-  }, []);
-
   const pickImage = () => {
     Alert.alert('Upload Photo', 'Choose source', [
       { text: 'Camera', onPress: openCamera },
@@ -34,7 +28,9 @@ export default function HomeScreen() {
 
   const openCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') return Alert.alert('Permission needed', 'Camera access is required.');
+    if (status !== 'granted') {
+      return Alert.alert('Permission needed', 'Camera access is required.');
+    }
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
@@ -46,7 +42,9 @@ export default function HomeScreen() {
 
   const openGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return Alert.alert('Permission needed', 'Gallery access is required.');
+    if (status !== 'granted') {
+      return Alert.alert('Permission needed', 'Gallery access is required.');
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
@@ -65,12 +63,21 @@ export default function HomeScreen() {
   };
 
   const handleGenerate = () => {
-    if (!imageUri) return Alert.alert('No image', 'Please upload a photo first.');
-    if (selectedStyles.length === 0) return Alert.alert('No style', 'Select at least one style.');
-    router.push({ pathname: '/generate', params: { imageUri, styles: selectedStyles.join(',') } });
+    if (!imageUri) {
+      return Alert.alert('No image', 'Please upload a photo first.');
+    }
+    if (selectedStyles.length === 0) {
+      return Alert.alert('No style', 'Select at least one style.');
+    }
+    // Store imageUri in store — don't pass via URL params
+    GenerationStore.setGenerating(imageUri, selectedStyles);
+    router.push({
+      pathname: '/generate',
+      params: { styles: selectedStyles.join(',') }, // ← removed imageUri
+    });
   };
 
-  const rows = [STYLES_CONFIG.slice(0, 3), STYLES_CONFIG.slice(3)];
+  const rows = [STYLES_CONFIG.slice(0, 3), STYLES_CONFIG.slice(3, 5)];
 
   return (
     <ScrollView
@@ -106,7 +113,13 @@ export default function HomeScreen() {
           <Text style={styles.sectionSub}>({selectedStyles.length} selected)</Text>
         </Text>
         {rows.map((row, ri) => (
-          <View key={ri} style={styles.row}>
+          <View
+            key={ri}
+            style={[
+              styles.row,
+              ri === 1 && { justifyContent: 'center' },
+            ]}
+          >
             {row.map(s => (
               <StyleCard
                 key={s.id}
@@ -139,6 +152,8 @@ export default function HomeScreen() {
   );
 }
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
   content: { paddingHorizontal: Spacing.lg, gap: Spacing.xl },
@@ -156,12 +171,16 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   title: {
-    fontSize: Fonts.sizes.xxxl,
+    fontSize: Math.min(Fonts.sizes.xxxl, width * 0.09),
     fontWeight: Fonts.weights.extrabold,
     color: Colors.text,
-    lineHeight: 42,
+    lineHeight: Math.min(42, width * 0.11),
   },
-  subtitle: { fontSize: Fonts.sizes.md, color: Colors.textMuted, lineHeight: 22 },
+  subtitle: {
+    fontSize: Fonts.sizes.md,
+    color: Colors.textMuted,
+    lineHeight: 22,
+  },
   section: { gap: Spacing.sm },
   sectionLabel: {
     fontSize: Fonts.sizes.sm,

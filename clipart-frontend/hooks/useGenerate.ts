@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
@@ -12,15 +12,18 @@ type Result = { status: ResultStatus; uri?: string };
 type Results = Record<string, Result>;
 
 export function useGenerate() {
-  const [results, setResults] = useState<Results>(GenerationStore.getState().results);
-  const [isGenerating, setIsGenerating] = useState(GenerationStore.getState().isGenerating);
+  const [results, setResults] = useState<Results>(
+    GenerationStore.getState().results
+  );
+  const [isGenerating, setIsGenerating] = useState(
+    GenerationStore.getState().isGenerating
+  );
 
-  // Subscribe to store changes
   useEffect(() => {
     const unsubscribe = GenerationStore.subscribe(() => {
-      const state = GenerationStore.getState();
-      setResults({ ...state.results });
-      setIsGenerating(state.isGenerating);
+      const s = GenerationStore.getState();
+      setResults({ ...s.results });
+      setIsGenerating(s.isGenerating);
     });
     return () => {
       unsubscribe();
@@ -45,7 +48,11 @@ export function useGenerate() {
         });
       }
 
-      const data = await ApiService.generateClipart({ imageBase64: base64, styleId, prompt });
+      const data = await ApiService.generateClipart({
+        imageBase64: base64,
+        styleId,
+        prompt,
+      });
 
       if (Platform.OS === 'web') {
         GenerationStore.updateResult(styleId, { status: 'done', uri: data.imageUrl });
@@ -62,30 +69,27 @@ export function useGenerate() {
   };
 
   const startGeneration = useCallback(
-    (imageUri: string, selectedStyles: typeof STYLES_CONFIG) => {
-      const styleIds = selectedStyles.map(s => s.id);
+  (imageUri: string, selectedStyles: typeof STYLES_CONFIG) => {
+    const state = GenerationStore.getState();
 
-      // ← KEY FIX: Don't regenerate if same image + same styles already done/running
-      if (GenerationStore.isSameGeneration(imageUri, styleIds)) {
-        console.log('[useGenerate] Same generation detected, skipping re-trigger');
-        return;
-      }
+    // If we already have results or are generating for this same request — skip
+    const hasResults = state.selectedStyleIds.length > 0 &&
+      state.selectedStyleIds.some(
+        id => state.results[id]?.status === 'done' || state.results[id]?.status === 'loading'
+      );
 
-      // Initialize store with loading state
-      GenerationStore.setGenerating(imageUri, styleIds);
-      const initial: Results = {};
-      styleIds.forEach(id => { initial[id] = { status: 'loading' }; });
-      selectedStyles.forEach(style => {
-        GenerationStore.updateResult(style.id, { status: 'loading' });
-      });
+    if (hasResults) {
+      console.log('[useGenerate] Results exist — skipping re-trigger');
+      return;
+    }
 
-      // Fire all in parallel
-      selectedStyles.forEach(style => {
-        generateSingleStyle(imageUri, style.id, style.prompt);
-      });
-    },
-    []
-  );
+    // Fire all in parallel
+    selectedStyles.forEach(style => {
+      generateSingleStyle(imageUri, style.id, style.prompt);
+    });
+  },
+  []
+);
 
   const downloadImage = useCallback(async (styleId: string) => {
     const uri = GenerationStore.getState().results[styleId]?.uri;

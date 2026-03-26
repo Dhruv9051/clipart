@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View, DimensionValue } from 'react-native';
+import { Animated, DimensionValue } from 'react-native';
 import { Colors, Radius } from '../constants/theme';
 
 export default function SkeletonLoader({ width, height, borderRadius = Radius.md }: {
@@ -22,9 +22,7 @@ export default function SkeletonLoader({ width, height, borderRadius = Radius.md
 
   return (
     <Animated.View
-      style={[
-        { width, height, borderRadius, backgroundColor: Colors.surfaceHigh, opacity },
-      ]}
+      style={{ width, height, borderRadius, backgroundColor: Colors.surfaceHigh, opacity }}
     />
   );
 }

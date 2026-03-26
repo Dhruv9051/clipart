@@ -1,3 +1,5 @@
+import { Dimensions } from "react-native";
+
 export const Colors = {
   bg: '#0A0A0F',
   surface: '#13131A',
@@ -94,3 +96,16 @@ export const STYLES_CONFIG = [
     prompt: 'pencil sketch illustration, hand drawn style, cross hatching, graphite drawing, detailed sketch art, black and white, professional illustration',
   },
 ];
+
+const { width } = Dimensions.get('window');
+const scale = (size: number) => (width / 390) * size;
+
+export const RF = {
+  xs: Math.max(scale(11), 10),
+  sm: Math.max(scale(13), 11),
+  md: Math.max(scale(15), 13),
+  lg: Math.max(scale(18), 16),
+  xl: Math.max(scale(22), 20),
+  xxl: Math.max(scale(28), 24),
+  xxxl: Math.max(scale(36), 28),
+};

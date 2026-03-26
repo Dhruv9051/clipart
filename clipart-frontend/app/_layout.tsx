@@ -14,7 +14,6 @@ export default function RootLayout() {
           headerTitleStyle: { fontWeight: '700' },
           contentStyle: { backgroundColor: Colors.bg },
           animation: 'slide_from_right',
-          gestureEnabled: true,
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -22,7 +21,8 @@ export default function RootLayout() {
           name="generate"
           options={{
             title: 'Generating Cliparts',
-            headerBackVisible: false, // We handle back ourselves
+            headerBackVisible: false,
+            headerLeft: () => null,
           }}
         />
       </Stack>
