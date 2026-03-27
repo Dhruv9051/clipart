@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import {
   ScrollView, StyleSheet, Text, View,
-  Pressable, Alert, BackHandler, Platform,
+  Pressable, BackHandler, Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

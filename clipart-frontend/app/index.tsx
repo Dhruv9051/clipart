@@ -81,11 +81,11 @@ export default function HomeScreen() {
     if (selectedStyles.length === 0) {
       return Alert.alert('No style', 'Select at least one style.');
     }
-    // Store imageUri in store — don't pass via URL params
+    // Store imageUri in store
     GenerationStore.setGenerating(imageUri, selectedStyles);
     router.push({
       pathname: '/generate',
-      params: { styles: selectedStyles.join(',') }, // ← removed imageUri
+      params: { styles: selectedStyles.join(',') }, // removed imageUri
     });
   };
 

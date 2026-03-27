@@ -74,7 +74,6 @@ export function useGenerate() {
       let base64: string;
 
       if (Platform.OS === 'web') {
-        // Web: imageUri is already a data URL "data:image/jpeg;base64,..."
         // Compress via canvas before extracting base64
         const compressedBase64 = await compressImageWeb(imageUri);
         base64 = compressedBase64;
