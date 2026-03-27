@@ -15,7 +15,7 @@ router.post('/', validateGenerateRequest, async (req: Request, res: Response) =>
       prompt,
       negativePrompt,
     });
-    console.log(`[generate] Done → style: ${styleId}`);
+    console.log(`Done → style: ${styleId}`);
     res.json({ imageUrl });
   } catch (err: any) {
     console.error(`Failed → ${styleId}:`, err.message);

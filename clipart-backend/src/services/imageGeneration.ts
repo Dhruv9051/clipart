@@ -7,7 +7,7 @@ type GenerateParams = {
   negativePrompt?: string;
 };
 
-// Pollinations AI 
+// Pollinations AI
 async function generateWithPollinations(prompt: string, styleId: string, negativePrompt?: string): Promise<string> {
   const fullPrompt = `${prompt}, high quality, detailed, professional illustration`;
   const encoded = encodeURIComponent(fullPrompt);
@@ -52,7 +52,7 @@ async function generateWithHuggingFace(prompt: string, negativePrompt?: string):
       );
 
       if (!response.ok) {
-        console.log(`${model} failed: ${response.status}`);
+        console.log(`[hf] ${model} failed: ${response.status}`);
         continue;
       }
 
