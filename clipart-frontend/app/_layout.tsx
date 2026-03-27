@@ -9,10 +9,10 @@ function BackButton() {
   const router = useRouter();
   return (
     <Pressable
-      onPress={() => router.replace('/')}
+      onPress={() => router.back()}
       style={{ paddingHorizontal: 12, paddingVertical: 6 }}
     >
-      <Text style={{ color: Colors.primaryLight, fontSize: 16 }}>← Back</Text>
+      <Text style={{ color: Colors.primaryLight, fontSize: 16 }}>←</Text>
     </Pressable>
   );
 }
@@ -35,7 +35,7 @@ export default function RootLayout() {
           name="generate"
           options={{
             title: 'Generating Cliparts',
-            headerLeft: () => Platform.OS !== 'web' ? <BackButton /> : null,
+            headerLeft: () => <BackButton />,
             headerBackVisible: false,
           }}
         />

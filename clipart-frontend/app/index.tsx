@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native';
@@ -17,6 +17,18 @@ export default function HomeScreen() {
   const [selectedStyles, setSelectedStyles] = useState<string[]>(
     ['cartoon', 'anime', 'pixel', 'flat', 'sketch']
   );
+  const [hasResults, setHasResults] = useState(
+    GenerationStore.hasActiveGeneration()
+  );
+
+  useEffect(() => {
+    const unsubscribe = GenerationStore.subscribe(() => {
+      setHasResults(GenerationStore.hasActiveGeneration());
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const pickImage = () => {
     Alert.alert('Upload Photo', 'Choose source', [
@@ -128,6 +140,20 @@ export default function HomeScreen() {
           </View>
         ))}
       </View>
+      {hasResults && (
+        <Pressable
+          onPress={() => {
+            const s = GenerationStore.getState();
+            router.push({
+              pathname: '/generate',
+              params: { styles: s.selectedStyleIds.join(',') },
+            });
+          }}
+          style={({ pressed }) => [styles.viewResultsBtn, { opacity: pressed ? 0.8 : 1 }]}
+        >
+          <Text style={styles.viewResultsText}>↗ View current results</Text>
+        </Pressable>
+      )}
       <Pressable
         onPress={handleGenerate}
         style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
@@ -208,4 +234,17 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   generateSub: { fontSize: Fonts.sizes.sm, color: 'rgba(255,255,255,0.7)' },
+  viewResultsBtn: {
+    padding: Spacing.md,
+    borderRadius: Radius.xl,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryGlow,
+  },
+  viewResultsText: {
+    fontSize: Fonts.sizes.md,
+    fontWeight: Fonts.weights.semibold,
+    color: Colors.primaryLight,
+  },
 });

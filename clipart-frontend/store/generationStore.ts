@@ -72,4 +72,8 @@ export const GenerationStore = {
     };
     notify();
   },
+
+  hasActiveGeneration: () => {
+    return state.imageUri !== null;
+  },
 };

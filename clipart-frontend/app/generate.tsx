@@ -21,7 +21,7 @@ export default function GenerateScreen() {
   const { results, isGenerating, startGeneration, downloadImage, shareImage } = useGenerate();
   const doneCount = Object.values(results).filter(r => r.status === 'done').length;
   const imageUri = GenerationStore.getState().imageUri;
-  
+
   useEffect(() => {
     if (!imageUri || selectedStyles.length === 0) {
       router.replace('/');
@@ -38,22 +38,21 @@ export default function GenerateScreen() {
         if (isGenerating) {
           Alert.alert(
             'Generation in progress',
-            'Go back anyway?',
+            'Go back anyway? Generation will continue in background.',
             [
               { text: 'Stay', style: 'cancel' },
               {
                 text: 'Go back',
                 style: 'destructive',
-                onPress: () => {
-                  GenerationStore.reset();
-                  router.replace('/');
-                },
+                onPress: () => router.back(),
               },
             ]
           );
           return true;
         }
-        return false;
+        // Not generating — just go back, keep results
+        router.back();
+        return true;
       };
 
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
