@@ -7,7 +7,7 @@ type GenerateParams = {
   negativePrompt?: string;
 };
 
-// Pollinations AI — completely free, no API key needed
+// Pollinations AI 
 async function generateWithPollinations(prompt: string, styleId: string, negativePrompt?: string): Promise<string> {
   const fullPrompt = `${prompt}, high quality, detailed, professional illustration`;
   const encoded = encodeURIComponent(fullPrompt);
@@ -18,7 +18,7 @@ async function generateWithPollinations(prompt: string, styleId: string, negativ
     url += `&neg_prompt=${encodeURIComponent(negativePrompt)}`;
   }
   
-  console.log(`[pollinations] Generated URL for ${styleId}: ${url}`);
+  console.log(`Generated URL for ${styleId}: ${url}`);
   return url;
 }
 
@@ -52,7 +52,7 @@ async function generateWithHuggingFace(prompt: string, negativePrompt?: string):
       );
 
       if (!response.ok) {
-        console.log(`[hf] ${model} failed: ${response.status}`);
+        console.log(`${model} failed: ${response.status}`);
         continue;
       }
 
@@ -86,7 +86,7 @@ async function generateWithHuggingFace(prompt: string, negativePrompt?: string):
 
 export const ImageGenerationService = {
   async generateImage(params: GenerateParams): Promise<string> {
-    console.log(`[generate] Starting → style: ${params.styleId}`);
+    console.log(`Starting → style: ${params.styleId}`);
 
     const fullPrompt = `${params.prompt}, high quality, detailed, professional illustration`;
 
@@ -94,13 +94,13 @@ export const ImageGenerationService = {
     if (HF_TOKEN) {
       const hfResult = await generateWithHuggingFace(fullPrompt, params.negativePrompt);
       if (hfResult) {
-        console.log(`[generate] HF succeeded → style: ${params.styleId}`);
+        console.log(`HF succeeded → style: ${params.styleId}`);
         return hfResult;
       }
     }
 
-    // Fallback to Pollinations AI (always free, always works)
-    console.log(`[generate] Falling back to Pollinations → style: ${params.styleId}`);
+    // Fallback to Pollinations AI
+    console.log(`Falling back to Pollinations → style: ${params.styleId}`);
     return generateWithPollinations(fullPrompt, params.styleId, params.negativePrompt);
   },
 };

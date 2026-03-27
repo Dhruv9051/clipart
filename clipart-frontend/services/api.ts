@@ -9,7 +9,7 @@ type GenerateResponse = {
   imageUrl: string;
 };
 
-const BACKEND_URL = 'https://clipart-backend-n6hb.onrender.com';
+const BACKEND_URL = process.env.BACKEND_URL;
 
 export const ApiService = {
   async generateClipart(payload: GenerateRequest): Promise<GenerateResponse> {

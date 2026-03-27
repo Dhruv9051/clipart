@@ -35,22 +35,6 @@ export default function GenerateScreen() {
       if (Platform.OS === 'web') return;
 
       const onBackPress = () => {
-        if (isGenerating) {
-          Alert.alert(
-            'Generation in progress',
-            'Go back anyway? Generation will continue in background.',
-            [
-              { text: 'Stay', style: 'cancel' },
-              {
-                text: 'Go back',
-                style: 'destructive',
-                onPress: () => router.back(),
-              },
-            ]
-          );
-          return true;
-        }
-        // Not generating — just go back, keep results
         router.back();
         return true;
       };

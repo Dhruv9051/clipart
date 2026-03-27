@@ -8,7 +8,7 @@ router.post('/', validateGenerateRequest, async (req: Request, res: Response) =>
   const { imageBase64, styleId, prompt, negativePrompt } = req.body;
 
   try {
-    console.log(`[generate] Starting → style: ${styleId}`);
+    console.log(`Starting → style: ${styleId}`);
     const imageUrl = await ImageGenerationService.generateImage({
       imageBase64,
       styleId,
@@ -18,7 +18,7 @@ router.post('/', validateGenerateRequest, async (req: Request, res: Response) =>
     console.log(`[generate] Done → style: ${styleId}`);
     res.json({ imageUrl });
   } catch (err: any) {
-    console.error(`[generate] Failed → ${styleId}:`, err.message);
+    console.error(`Failed → ${styleId}:`, err.message);
     res.status(500).json({ error: err.message ?? 'Generation failed' });
   }
 });
