@@ -1,6 +1,6 @@
-# Clipart AI — AI Clipart Generator
+# Clipart - AI Clipart Generator
 
-Transform any photo into stunning clipart styles instantly using AI. Built for the Flickd assignment.
+Transform any photo into clipart styles instantly using AI.
 
 ---
 
@@ -13,6 +13,9 @@ Transform any photo into stunning clipart styles instantly using AI. Built for t
 ## 🚀 Live Backend
 https://clipart-backend-n6hb.onrender.com/health
 
+## 🚀 Live frontend
+https://clipart-ds.netlify.app/
+
 ## 📦 Repository
 https://github.com/Dhruv9051/clipart
 
@@ -20,7 +23,7 @@ https://github.com/Dhruv9051/clipart
 
 ## App Overview
 
-Clipart AI lets users upload a photo and transform it into 5 different clipart styles simultaneously using AI. The app generates all styles in parallel, shows real-time progress with skeleton loaders, and lets users download or share the results.
+Clipart lets users upload a photo and transform it into 5 different clipart styles simultaneously using AI. The app generates all styles in parallel, shows real-time progress with skeleton loaders, and lets users download or share the results.
 
 ---
 
@@ -54,7 +57,6 @@ Clipart AI lets users upload a photo and transform it into 5 different clipart s
 
 ### Backend
 - Node.js + Express + TypeScript
-- Deployed on Render (free tier)
 - HuggingFace Inference API — primary AI provider
 - Pollinations AI — free fallback (no auth needed)
 - Imgur API — image hosting for generated outputs
@@ -64,6 +66,7 @@ Clipart AI lets users upload a photo and transform it into 5 different clipart s
 ### Build & Deployment
 - EAS Build for Android APK
 - Render for backend hosting
+- Netlify for frontend hosting
 - GitHub for version control
 
 ---
@@ -102,10 +105,8 @@ clipart/
 │   │   └── useGenerate.ts       # AI generation logic + state
 │   ├── services/
 │   │   └── api.ts               # Backend API service
-│   ├── store/
-│   │   └── generationStore.ts   # Global generation state
-│   └── types/
-│       └── index.ts             # Shared TypeScript types
+│   └── store/
+│       └── generationStore.ts   # Global generation state
 │
 └── clipart-backend/
     └── src/
@@ -207,7 +208,7 @@ Generates a clipart image from a base64 encoded photo.
 ## Tech Decisions & Tradeoffs
 
 ### React Native + Expo over Native Android
-Expo's managed workflow enabled rapid development within the 72-hour constraint. Expo Router provides file-based navigation similar to Next.js, which felt natural coming from a web background. EAS Build handles APK compilation in the cloud without needing Android Studio locally.
+Expo's managed workflow enabled rapid development. Expo Router provides file-based navigation similar to Next.js. EAS Build handles APK compilation in the cloud without needing Android Studio locally.
 
 ### Global store over Redux/Zustand
 A simple module-level store with a subscriber pattern was sufficient for this app's needs. It persists generation results across navigation without the overhead of a full state management library. This keeps the codebase lean and readable.
@@ -228,9 +229,9 @@ Images are resized to max 1024px and compressed to 80% JPEG quality before being
 HuggingFace returns raw image bytes which can't be served directly to mobile clients as a URL. Imgur provides a free public hosting layer that converts the bytes to a stable URL the app can download and cache locally.
 
 ### Tradeoffs made under time constraint
-- **AI image quality**: Pollinations AI generates generic clipart without using the uploaded photo directly. With Replicate credits, img2img models would produce clipart that actually resembles the user — this is the biggest quality gap.
-- **No caching**: Results are stored in memory only and lost on app restart. Redis caching would improve repeat generation speed significantly.
-- **Render cold starts**: The free tier backend sleeps after 15 mins of inactivity, causing a ~30 second delay on first request. A paid tier or Railway would eliminate this.
+- **AI image quality**: HuggingFace / Pollinations AI generates generic clipart without using the uploaded photo directly. Instead Replicate's img2img models would produce clipart that actually resembles the user (didn't use this since it requires credit card details) — this is the biggest quality gap.
+- **No caching**: Results are stored in memory only and lost on app restart. Some type of caching would improve repeat generation speed significantly.
+- **Render cold starts**: The free tier backend sleeps after 15 mins of inactivity, causing a ~30 second delay on first request. A paid tier would eliminate this.
 - **No retry mechanism**: Failed generations show an error state but don't auto-retry. A retry button would improve UX.
 
 ---
