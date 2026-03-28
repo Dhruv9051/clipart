@@ -5,10 +5,10 @@ Transform any photo into clipart styles instantly using AI.
 ---
 
 ## 📱 APK Download
-[Add Google Drive link after uploading]
+https://drive.google.com/drive/folders/1ZPm0kL-blVG6KbXeu_zG84lBxYij4tSi?usp=drive_link
 
 ## 🎥 Screen Recording
-[Add Drive link after recording]
+https://drive.google.com/drive/folders/1ZPm0kL-blVG6KbXeu_zG84lBxYij4tSi?usp=drive_link
 
 ## 🚀 Live Backend
 https://clipart-backend-n6hb.onrender.com/health
